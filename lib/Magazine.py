@@ -1,52 +1,51 @@
 from Article import Article
-from Author import Author
 
 class Magazine:
-    all_magazines = []
+    _all_magazines = []
 
-    def __init__(self, name, category) -> None:
-        self.name = name
-        self.category = category
+    def __init__(self, name, category):
+        self._name = name
+        self._category = category
+        Magazine._all_magazines.append(self)
 
-        Magazine.add_to_all(self)
+    @property
+    def name(self):
+        return self._name
 
-    def get_name(self):
-        return self.name  
-    
-    def get_category(self):
-        return self.category
-    
+    @name.setter
+    def name(self, value):
+        self._name = value
+
+    @property
+    def category(self):
+        return self._category
+
+    @category.setter
+    def category(self, value):
+        self._category = value
+
     @classmethod
-    def add_to_all(cls, magazine):
-        cls.all_magazines.append(magazine)
-
-    @classmethod
-    def show_all_magazines(cls):
-        print([magazine.name for magazine in cls.all_magazines])
-
-    def contributors(self):
-        return list(set(article.author() for article in Article.all_articles if article.magazine() == self))
+    def all(cls):
+        return cls._all_magazines
 
     @classmethod
     def find_by_name(cls, name):
-        for magazine in cls.all_magazines:
-            if magazine.name() == name:
+        for magazine in cls._all_magazines:
+            if magazine.name == name:
                 return magazine
-        return None  
+        return None
 
-    @classmethod
-    def article_titles(cls, magazine_name):
-        magazine = cls.find_by_name(magazine_name)
-        if magazine:
-            return [article.title() for article in Article.all_articles if article.magazine() == magazine]
-        else:
-            return []
+    def contributors(self):
+        authors = set(article.author for article in Article._all_articles if article.magazine == self)
+        return list(authors)
+
+    def article_titles(self):
+        return [article.title for article in Article._all_articles if article.magazine == self]
 
     def contributing_authors(self):
-        contributing_authors = []
-        for author in Author.all_authors:
-            articles_count = sum(1 for article in author.articles() if article.magazine() == self)
-            if articles_count > 2:
-                contributing_authors.append(author)
-        return contributing_authors  
-    
+        author_articles = {}
+        for article in Article._all_articles:
+            if article.magazine == self:
+                author_articles[article.author] = author_articles.get(article.author, 0) + 1
+        return [author for author, count in author_articles.items() if count > 2]
+
